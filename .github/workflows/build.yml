@@ -311,15 +311,22 @@ jobs:
                 fi
             fi
 
-        - name: 'Organize boot artifacts'
-          working-directory: './kernel-src'
+        - name: 'Package flashable zip with AnyKernel3'
           run: |
-            # Copy all boot-related build artifacts into a seperate folder
-            mkdir -p ../kernel-build-artifacts-${{ github.event.inputs.KERNEL_ARCH }}-$(date +"%Y%m%d")/
-            cp -rf out/arch/${{ github.event.inputs.KERNEL_ARCH }}/boot/* ../kernel-build-artifacts*/
+            git clone --depth=1 https://github.com/blazey66/AnyKernel3.git -b lavender AnyKernel3
+            cp ./kernel-src/out/arch/${{ github.event.inputs.KERNEL_ARCH }}/boot/Image.gz-dtb ./AnyKernel3/
+            cd ./AnyKernel3/
+            zip -r9 UPDATE-lavender-ksu.zip * -x .git README.md *placeholder
+            cd ..
 
-        - name: 'Upload kernel build artifacts'
+        - name: 'Upload flashable zip'
           uses: actions/upload-artifact@v4
           with:
-            name: kernel-build-artifacts
-            path: ./kernel-build-artifacts*/
+            name: UPDATE-lavender-ksu
+            path: ./AnyKernel3/UPDATE-lavender-ksu.zip
+
+        - name: 'Upload Image.gz-dtb'
+          uses: actions/upload-artifact@v4
+          with:
+            name: Image.gz-dtb
+            path: ./kernel-src/out/arch/${{ github.event.inputs.KERNEL_ARCH }}/boot/Image.gz-dtb
